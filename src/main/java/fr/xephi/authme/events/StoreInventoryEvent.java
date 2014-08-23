@@ -7,6 +7,8 @@ import fr.xephi.authme.cache.backup.FileCache;
 
 /**
  *
+ * This event is call just before write inventory content to cache
+ *
  * @author Xephi59
  */
 public class StoreInventoryEvent extends CustomEvent {
@@ -23,9 +25,9 @@ public class StoreInventoryEvent extends CustomEvent {
 
     public StoreInventoryEvent(Player player, FileCache fileCache) {
         this.player = player;
-        this.inventory = fileCache.readCache(player.getName().toLowerCase())
+        this.inventory = fileCache.readCache(player)
                 .getInventory();
-        this.armor = fileCache.readCache(player.getName().toLowerCase())
+        this.armor = fileCache.readCache(player)
                 .getArmour();
     }
 

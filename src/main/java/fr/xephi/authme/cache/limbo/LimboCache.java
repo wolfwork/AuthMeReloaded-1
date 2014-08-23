@@ -19,12 +19,13 @@ public class LimboCache {
 
     private static LimboCache singleton = null;
     public HashMap<String, LimboPlayer> cache;
-    private FileCache playerData = new FileCache();
+    private FileCache playerData;
     public AuthMe plugin;
 
     private LimboCache(AuthMe plugin) {
         this.plugin = plugin;
         this.cache = new HashMap<String, LimboPlayer>();
+        this.playerData = new FileCache(plugin);
     }
 
     public void addLimboPlayer(Player player) {
@@ -37,7 +38,7 @@ public class LimboCache {
         String playerGroup = "";
         boolean flying;
 
-        if (playerData.doesCacheExist(name)) {
+        if (playerData.doesCacheExist(player)) {
             StoreInventoryEvent event = new StoreInventoryEvent(player,
                     playerData);
             Bukkit.getServer().getPluginManager().callEvent(event);
@@ -49,9 +50,9 @@ public class LimboCache {
                 inv = null;
                 arm = null;
             }
-            playerGroup = playerData.readCache(name).getGroup();
-            operator = playerData.readCache(name).getOperator();
-            flying = playerData.readCache(name).isFlying();
+            playerGroup = playerData.readCache(player).getGroup();
+            operator = playerData.readCache(player).getOperator();
+            flying = playerData.readCache(player).isFlying();
         } else {
             StoreInventoryEvent event = new StoreInventoryEvent(player);
             Bukkit.getServer().getPluginManager().callEvent(event);

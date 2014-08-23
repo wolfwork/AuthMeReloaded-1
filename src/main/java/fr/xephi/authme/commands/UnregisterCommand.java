@@ -34,11 +34,12 @@ public class UnregisterCommand implements CommandExecutor {
     private Messages m = Messages.getInstance();
     public AuthMe plugin;
     private DataSource database;
-    private FileCache playerCache = new FileCache();
+    private FileCache playerCache;
 
     public UnregisterCommand(AuthMe plugin, DataSource database) {
         this.plugin = plugin;
         this.database = database;
+        this.playerCache = new FileCache(plugin);
     }
 
     @Override
@@ -128,8 +129,8 @@ public class UnregisterCommand implements CommandExecutor {
                         player.getName().toLowerCase());
                 // check if Player cache File Exist and delete it, preventing
                 // duplication of items
-                if (playerCache.doesCacheExist(name)) {
-                    playerCache.removeCache(name);
+                if (playerCache.doesCacheExist(player)) {
+                    playerCache.removeCache(player);
                 }
                 if (Settings.applyBlindEffect) player
                         .addPotionEffect(new PotionEffect(

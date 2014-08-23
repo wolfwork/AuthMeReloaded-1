@@ -33,11 +33,12 @@ public class LogoutCommand implements CommandExecutor {
     private AuthMe plugin;
     private DataSource database;
     private Utils utils = Utils.getInstance();
-    private FileCache playerBackup = new FileCache();
+    private FileCache playerBackup;
 
     public LogoutCommand(AuthMe plugin, DataSource database) {
         this.plugin = plugin;
         this.database = database;
+        this.playerBackup = new FileCache(plugin);
     }
 
     @Override
@@ -92,7 +93,7 @@ public class LogoutCommand implements CommandExecutor {
             DataFileCache playerData = new DataFileCache(LimboCache
                     .getInstance().getLimboPlayer(name).getInventory(),
                     LimboCache.getInstance().getLimboPlayer(name).getArmour());
-            playerBackup.createCache(name, playerData, LimboCache.getInstance()
+            playerBackup.createCache(player, playerData, LimboCache.getInstance()
                     .getLimboPlayer(name).getGroup(), LimboCache.getInstance()
                     .getLimboPlayer(name).getOperator(), LimboCache
                     .getInstance().getLimboPlayer(name).isFlying());

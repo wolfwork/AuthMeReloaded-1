@@ -70,13 +70,14 @@ public class AuthMePlayerListener implements Listener {
     private Messages m = Messages.getInstance();
     public AuthMe plugin;
     private DataSource data;
-    private FileCache playerBackup = new FileCache();
+    private FileCache playerBackup;
     public boolean causeByAuthMe = false;
     private HashMap<String, PlayerLoginEvent> antibot = new HashMap<String, PlayerLoginEvent>();
 
     public AuthMePlayerListener(AuthMe plugin, DataSource data) {
         this.plugin = plugin;
         this.data = data;
+        this.playerBackup = new FileCache(plugin);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -666,7 +667,7 @@ public class AuthMePlayerListener implements Listener {
             DataFileCache dataFile = new DataFileCache(LimboCache.getInstance()
                     .getLimboPlayer(name).getInventory(), LimboCache
                     .getInstance().getLimboPlayer(name).getArmour());
-            playerBackup.createCache(name, dataFile, LimboCache.getInstance()
+            playerBackup.createCache(player, dataFile, LimboCache.getInstance()
                     .getLimboPlayer(name).getGroup(), LimboCache.getInstance()
                     .getLimboPlayer(name).getOperator(), LimboCache
                     .getInstance().getLimboPlayer(name).isFlying());
@@ -848,8 +849,8 @@ public class AuthMePlayerListener implements Listener {
             this.plugin.getServer().getScheduler()
                     .cancelTask(limbo.getMessageTaskId());
             LimboCache.getInstance().deleteLimboPlayer(name);
-            if (playerBackup.doesCacheExist(name)) {
-                playerBackup.removeCache(name);
+            if (playerBackup.doesCacheExist(player)) {
+                playerBackup.removeCache(player);
             }
         }
         PlayerCache.getInstance().removePlayer(name);
@@ -950,8 +951,8 @@ public class AuthMePlayerListener implements Listener {
             this.plugin.getServer().getScheduler()
                     .cancelTask(limbo.getMessageTaskId());
             LimboCache.getInstance().deleteLimboPlayer(name);
-            if (this.playerBackup.doesCacheExist(name)) {
-                this.playerBackup.removeCache(name);
+            if (this.playerBackup.doesCacheExist(player)) {
+                this.playerBackup.removeCache(player);
             }
         }
         PlayerCache.getInstance().removePlayer(name);

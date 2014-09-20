@@ -12,7 +12,6 @@ import java.util.List;
 
 import fr.xephi.authme.AuthMe;
 import fr.xephi.authme.ConsoleLogger;
-import fr.xephi.authme.api.API;
 import fr.xephi.authme.cache.auth.PlayerAuth;
 import fr.xephi.authme.settings.PlayersLogs;
 import fr.xephi.authme.settings.Settings;
@@ -32,8 +31,11 @@ public class FlatFileThread extends Thread implements DataSource {
      */
     private File source;
 
-    public void run() {
+    public FlatFileThread() {
         source = new File(Settings.AUTH_FILE);
+    }
+
+    public void run() {
         try {
             source.createNewFile();
         } catch (IOException e) {
@@ -42,8 +44,8 @@ public class FlatFileThread extends Thread implements DataSource {
                 ConsoleLogger.showError("Can't use FLAT FILE... SHUTDOWN...");
                 AuthMe.getInstance().getServer().shutdown();
             }
-            if (!Settings.isStopEnabled) AuthMe.getInstance().getServer()
-                    .getPluginManager().disablePlugin(AuthMe.getInstance());
+            if (!Settings.isStopEnabled)
+                AuthMe.getInstance().getServer().getPluginManager().disablePlugin(AuthMe.getInstance());
             return;
         }
     }
@@ -56,7 +58,7 @@ public class FlatFileThread extends Thread implements DataSource {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] args = line.split(":");
-                if (args.length > 1 && args[0].equals(user)) {
+                if (args.length > 1 && args[0].equalsIgnoreCase(user)) {
                     return true;
                 }
             }
@@ -85,11 +87,7 @@ public class FlatFileThread extends Thread implements DataSource {
         BufferedWriter bw = null;
         try {
             bw = new BufferedWriter(new FileWriter(source, true));
-            bw.write(auth.getNickname() + ":" + auth.getHash() + ":"
-                    + auth.getIp() + ":" + auth.getLastLogin() + ":"
-                    + auth.getQuitLocX() + ":" + auth.getQuitLocY() + ":"
-                    + auth.getQuitLocZ() + ":" + auth.getWorld() + ":"
-                    + auth.getEmail() + "\n");
+            bw.write(auth.getNickname() + ":" + auth.getHash() + ":" + auth.getIp() + ":" + auth.getLastLogin() + ":" + auth.getQuitLocX() + ":" + auth.getQuitLocY() + ":" + auth.getQuitLocZ() + ":" + auth.getWorld() + ":" + auth.getEmail() + "\n");
         } catch (IOException ex) {
             ConsoleLogger.showError(ex.getMessage());
             return false;
@@ -119,46 +117,23 @@ public class FlatFileThread extends Thread implements DataSource {
                 if (args[0].equals(auth.getNickname())) {
                     switch (args.length) {
                         case 4: {
-                            newAuth = new PlayerAuth(args[0], auth.getHash(),
-                                    args[2], Long.parseLong(args[3]), 0, 0, 0,
-                                    "world", "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            newAuth = new PlayerAuth(args[0], auth.getHash(), args[2], Long.parseLong(args[3]), 0, 0, 0, "world", "your@email.com");
                             break;
                         }
                         case 7: {
-                            newAuth = new PlayerAuth(args[0], auth.getHash(),
-                                    args[2], Long.parseLong(args[3]),
-                                    Double.parseDouble(args[4]),
-                                    Double.parseDouble(args[5]),
-                                    Double.parseDouble(args[6]), "world",
-                                    "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            newAuth = new PlayerAuth(args[0], auth.getHash(), args[2], Long.parseLong(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), "world", "your@email.com");
                             break;
                         }
                         case 8: {
-                            newAuth = new PlayerAuth(args[0], auth.getHash(),
-                                    args[2], Long.parseLong(args[3]),
-                                    Double.parseDouble(args[4]),
-                                    Double.parseDouble(args[5]),
-                                    Double.parseDouble(args[6]), args[7],
-                                    "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            newAuth = new PlayerAuth(args[0], auth.getHash(), args[2], Long.parseLong(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), args[7], "your@email.com");
                             break;
                         }
                         case 9: {
-                            newAuth = new PlayerAuth(args[0], auth.getHash(),
-                                    args[2], Long.parseLong(args[3]),
-                                    Double.parseDouble(args[4]),
-                                    Double.parseDouble(args[5]),
-                                    Double.parseDouble(args[6]), args[7],
-                                    args[8], API.getPlayerRealName(args[0]));
+                            newAuth = new PlayerAuth(args[0], auth.getHash(), args[2], Long.parseLong(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), args[7], args[8]);
                             break;
                         }
                         default: {
-                            newAuth = new PlayerAuth(args[0], auth.getHash(),
-                                    args[2], 0, 0, 0, 0, "world",
-                                    "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            newAuth = new PlayerAuth(args[0], auth.getHash(), args[2], 0, 0, 0, 0, "world", "your@email.com");
                             break;
                         }
                     }
@@ -196,49 +171,26 @@ public class FlatFileThread extends Thread implements DataSource {
             String line = "";
             while ((line = br.readLine()) != null) {
                 String[] args = line.split(":");
-                if (args[0].equals(auth.getNickname())) {
+                if (args[0].equalsIgnoreCase(auth.getNickname())) {
                     switch (args.length) {
                         case 4: {
-                            newAuth = new PlayerAuth(args[0], args[1],
-                                    auth.getIp(), auth.getLastLogin(), 0, 0, 0,
-                                    "world", "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            newAuth = new PlayerAuth(args[0], args[1], auth.getIp(), auth.getLastLogin(), 0, 0, 0, "world", "your@email.com");
                             break;
                         }
                         case 7: {
-                            newAuth = new PlayerAuth(args[0], args[1],
-                                    auth.getIp(), auth.getLastLogin(),
-                                    Double.parseDouble(args[4]),
-                                    Double.parseDouble(args[5]),
-                                    Double.parseDouble(args[6]), "world",
-                                    "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            newAuth = new PlayerAuth(args[0], args[1], auth.getIp(), auth.getLastLogin(), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), "world", "your@email.com");
                             break;
                         }
                         case 8: {
-                            newAuth = new PlayerAuth(args[0], args[1],
-                                    auth.getIp(), auth.getLastLogin(),
-                                    Double.parseDouble(args[4]),
-                                    Double.parseDouble(args[5]),
-                                    Double.parseDouble(args[6]), args[7],
-                                    "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            newAuth = new PlayerAuth(args[0], args[1], auth.getIp(), auth.getLastLogin(), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), args[7], "your@email.com");
                             break;
                         }
                         case 9: {
-                            newAuth = new PlayerAuth(args[0], args[1],
-                                    auth.getIp(), auth.getLastLogin(),
-                                    Double.parseDouble(args[4]),
-                                    Double.parseDouble(args[5]),
-                                    Double.parseDouble(args[6]), args[7],
-                                    args[8], API.getPlayerRealName(args[0]));
+                            newAuth = new PlayerAuth(args[0], args[1], auth.getIp(), auth.getLastLogin(), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), args[7], args[8]);
                             break;
                         }
                         default: {
-                            newAuth = new PlayerAuth(args[0], args[1],
-                                    auth.getIp(), auth.getLastLogin(), 0, 0, 0,
-                                    "world", "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            newAuth = new PlayerAuth(args[0], args[1], auth.getIp(), auth.getLastLogin(), 0, 0, 0, "world", "your@email.com");
                             break;
                         }
                     }
@@ -276,12 +228,8 @@ public class FlatFileThread extends Thread implements DataSource {
             String line = "";
             while ((line = br.readLine()) != null) {
                 String[] args = line.split(":");
-                if (args[0].equals(auth.getNickname())) {
-                    newAuth = new PlayerAuth(args[0], args[1], args[2],
-                            Long.parseLong(args[3]), auth.getQuitLocX(),
-                            auth.getQuitLocY(), auth.getQuitLocZ(),
-                            auth.getWorld(), auth.getEmail(),
-                            API.getPlayerRealName(args[0]));
+                if (args[0].equalsIgnoreCase(auth.getNickname())) {
+                    newAuth = new PlayerAuth(args[0], args[1], args[2], Long.parseLong(args[3]), auth.getQuitLocX(), auth.getQuitLocY(), auth.getQuitLocZ(), auth.getWorld(), auth.getEmail());
                     break;
                 }
             }
@@ -478,43 +426,20 @@ public class FlatFileThread extends Thread implements DataSource {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] args = line.split(":");
-                if (args[0].equals(user)) {
+                if (args[0].equalsIgnoreCase(user)) {
                     switch (args.length) {
                         case 2:
-                            return new PlayerAuth(args[0], args[1],
-                                    "198.18.0.1", 0, "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            return new PlayerAuth(args[0], args[1], "198.18.0.1", 0, "your@email.com");
                         case 3:
-                            return new PlayerAuth(args[0], args[1], args[2], 0,
-                                    "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            return new PlayerAuth(args[0], args[1], args[2], 0, "your@email.com");
                         case 4:
-                            return new PlayerAuth(args[0], args[1], args[2],
-                                    Long.parseLong(args[3]), "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            return new PlayerAuth(args[0], args[1], args[2], Long.parseLong(args[3]), "your@email.com");
                         case 7:
-                            return new PlayerAuth(args[0], args[1], args[2],
-                                    Long.parseLong(args[3]),
-                                    Double.parseDouble(args[4]),
-                                    Double.parseDouble(args[5]),
-                                    Double.parseDouble(args[6]),
-                                    "unavailableworld", "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            return new PlayerAuth(args[0], args[1], args[2], Long.parseLong(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), "unavailableworld", "your@email.com");
                         case 8:
-                            return new PlayerAuth(args[0], args[1], args[2],
-                                    Long.parseLong(args[3]),
-                                    Double.parseDouble(args[4]),
-                                    Double.parseDouble(args[5]),
-                                    Double.parseDouble(args[6]), args[7],
-                                    "your@email.com",
-                                    API.getPlayerRealName(args[0]));
+                            return new PlayerAuth(args[0], args[1], args[2], Long.parseLong(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), args[7], "your@email.com");
                         case 9:
-                            return new PlayerAuth(args[0], args[1], args[2],
-                                    Long.parseLong(args[3]),
-                                    Double.parseDouble(args[4]),
-                                    Double.parseDouble(args[5]),
-                                    Double.parseDouble(args[6]), args[7],
-                                    args[8], API.getPlayerRealName(args[0]));
+                            return new PlayerAuth(args[0], args[1], args[2], Long.parseLong(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), args[7], args[8]);
                     }
                 }
             }
@@ -556,12 +481,7 @@ public class FlatFileThread extends Thread implements DataSource {
             while ((line = br.readLine()) != null) {
                 String[] args = line.split(":");
                 if (args[0].equals(auth.getNickname())) {
-                    newAuth = new PlayerAuth(args[0], args[1], args[2],
-                            Long.parseLong(args[3]),
-                            Double.parseDouble(args[4]),
-                            Double.parseDouble(args[5]),
-                            Double.parseDouble(args[6]), args[7],
-                            auth.getEmail(), API.getPlayerRealName(args[0]));
+                    newAuth = new PlayerAuth(args[0], args[1], args[2], Long.parseLong(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), args[7], auth.getEmail());
                     break;
                 }
             }
@@ -731,7 +651,7 @@ public class FlatFileThread extends Thread implements DataSource {
 
     @Override
     public boolean isLogged(String user) {
-        return PlayersLogs.getInstance().players.contains(user.toLowerCase());
+        return PlayersLogs.getInstance().players.contains(user);
     }
 
     @Override
@@ -758,10 +678,7 @@ public class FlatFileThread extends Thread implements DataSource {
             while ((br.readLine()) != null) {
                 result++;
             }
-        } catch (FileNotFoundException ex) {
-            ConsoleLogger.showError(ex.getMessage());
-            return result;
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             ConsoleLogger.showError(ex.getMessage());
             return result;
         } finally {
@@ -773,5 +690,54 @@ public class FlatFileThread extends Thread implements DataSource {
             }
         }
         return result;
+    }
+
+    @Override
+    public void updateName(String oldone, String newone) {
+        PlayerAuth auth = this.getAuth(oldone);
+        auth.setName(newone);
+        this.saveAuth(auth);
+        this.removeAuth(oldone);
+    }
+
+    @Override
+    public List<PlayerAuth> getAllAuths() {
+        BufferedReader br = null;
+        List<PlayerAuth> auths = new ArrayList<PlayerAuth>();
+        try {
+            br = new BufferedReader(new FileReader(source));
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] args = line.split(":");
+                switch (args.length) {
+                    case 2:
+                        auths.add(new PlayerAuth(args[0], args[1], "198.18.0.1", 0, "your@email.com"));
+                    case 3:
+                        auths.add(new PlayerAuth(args[0], args[1], args[2], 0, "your@email.com"));
+                    case 4:
+                        auths.add(new PlayerAuth(args[0], args[1], args[2], Long.parseLong(args[3]), "your@email.com"));
+                    case 7:
+                        auths.add(new PlayerAuth(args[0], args[1], args[2], Long.parseLong(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), "unavailableworld", "your@email.com"));
+                    case 8:
+                        auths.add(new PlayerAuth(args[0], args[1], args[2], Long.parseLong(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), args[7], "your@email.com"));
+                    case 9:
+                        auths.add(new PlayerAuth(args[0], args[1], args[2], Long.parseLong(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), args[7], args[8]));
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            ConsoleLogger.showError(ex.getMessage());
+            return auths;
+        } catch (IOException ex) {
+            ConsoleLogger.showError(ex.getMessage());
+            return auths;
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
+        return auths;
     }
 }

@@ -54,7 +54,7 @@ public class LogoutCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        String name = player.getName().toLowerCase();
+        String name = player.getName();
 
         if (!PlayerCache.getInstance().isAuthenticated(name)) {
             m._(player, "not_logged_in");
@@ -62,6 +62,8 @@ public class LogoutCommand implements CommandExecutor {
         }
 
         PlayerAuth auth = PlayerCache.getInstance().getAuth(name);
+        if (Settings.isSessionsEnabled)
+            auth.setLastLogin(0L);
         database.updateSession(auth);
         auth.setQuitLocX(player.getLocation().getX());
         auth.setQuitLocY(player.getLocation().getY());
@@ -74,54 +76,49 @@ public class LogoutCommand implements CommandExecutor {
 
         if (Settings.isTeleportToSpawnEnabled && !Settings.noTeleport) {
             Location spawnLoc = plugin.getSpawnLocation(player);
-            AuthMeTeleportEvent tpEvent = new AuthMeTeleportEvent(player,
-                    spawnLoc);
+            AuthMeTeleportEvent tpEvent = new AuthMeTeleportEvent(player, spawnLoc);
             plugin.getServer().getPluginManager().callEvent(tpEvent);
             if (!tpEvent.isCancelled()) {
-                if (tpEvent.getTo() != null) player.teleport(tpEvent.getTo());
+                if (tpEvent.getTo() != null)
+                    player.teleport(tpEvent.getTo());
             }
         }
 
-        if (LimboCache.getInstance().hasLimboPlayer(name)) LimboCache
-                .getInstance().deleteLimboPlayer(name);
+        if (LimboCache.getInstance().hasLimboPlayer(name))
+            LimboCache.getInstance().deleteLimboPlayer(name);
         LimboCache.getInstance().addLimboPlayer(player);
         utils.setGroup(player, groupType.NOTLOGGEDIN);
         if (Settings.protectInventoryBeforeLogInEnabled) {
             player.getInventory().clear();
             // create cache file for handling lost of inventories on unlogged in
             // status
-            DataFileCache playerData = new DataFileCache(LimboCache
-                    .getInstance().getLimboPlayer(name).getInventory(),
-                    LimboCache.getInstance().getLimboPlayer(name).getArmour());
-            playerBackup.createCache(player, playerData, LimboCache.getInstance()
-                    .getLimboPlayer(name).getGroup(), LimboCache.getInstance()
-                    .getLimboPlayer(name).getOperator(), LimboCache
-                    .getInstance().getLimboPlayer(name).isFlying());
+            DataFileCache playerData = new DataFileCache(LimboCache.getInstance().getLimboPlayer(name).getInventory(), LimboCache.getInstance().getLimboPlayer(name).getArmour());
+            playerBackup.createCache(player, playerData, LimboCache.getInstance().getLimboPlayer(name).getGroup(), LimboCache.getInstance().getLimboPlayer(name).getOperator(), LimboCache.getInstance().getLimboPlayer(name).isFlying());
         }
 
         int delay = Settings.getRegistrationTimeout * 20;
         int interval = Settings.getWarnMessageInterval;
         BukkitScheduler sched = sender.getServer().getScheduler();
         if (delay != 0) {
-            int id = sched.scheduleSyncDelayedTask(plugin, new TimeoutTask(
-                    plugin, name), delay);
+            int id = sched.scheduleSyncDelayedTask(plugin, new TimeoutTask(plugin, name), delay);
             LimboCache.getInstance().getLimboPlayer(name).setTimeoutTaskId(id);
         }
-        int msgT = sched.scheduleSyncDelayedTask(plugin, new MessageTask(
-                plugin, name, m._("login_msg"), interval));
+        int msgT = sched.scheduleSyncDelayedTask(plugin, new MessageTask(plugin, name, m._("login_msg"), interval));
         LimboCache.getInstance().getLimboPlayer(name).setMessageTaskId(msgT);
         try {
-            if (player.isInsideVehicle()) player.getVehicle().eject();
+            if (player.isInsideVehicle())
+                player.getVehicle().eject();
         } catch (NullPointerException npe) {
         }
-        if (Settings.applyBlindEffect) player.addPotionEffect(new PotionEffect(
-                PotionEffectType.BLINDNESS,
-                Settings.getRegistrationTimeout * 20, 2));
+        if (Settings.applyBlindEffect)
+            player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Settings.getRegistrationTimeout * 20, 2));
+        player.setOp(false);
+        player.setFlying(true);
+        player.setAllowFlight(true);
         m._(player, "logout");
         ConsoleLogger.info(player.getDisplayName() + " logged out");
         if (plugin.notifications != null) {
-            plugin.notifications.showNotification(new Notification("[AuthMe] "
-                    + player.getName() + " logged out!"));
+            plugin.notifications.showNotification(new Notification("[AuthMe] " + player.getName() + " logged out!"));
         }
         return true;
     }

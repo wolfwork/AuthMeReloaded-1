@@ -24,19 +24,18 @@ public class MessageTask implements Runnable {
 
     @Override
     public void run() {
-        if (PlayerCache.getInstance().isAuthenticated(name)) return;
+        if (PlayerCache.getInstance().isAuthenticated(name))
+            return;
 
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            if (player.getName().toLowerCase().equals(name)) {
+            if (player.getName().equals(name)) {
                 for (String ms : msg) {
                     player.sendMessage(ms);
                 }
                 BukkitScheduler sched = plugin.getServer().getScheduler();
-                int late = sched.scheduleSyncDelayedTask(plugin, this,
-                        interval * 20);
+                int late = sched.scheduleSyncDelayedTask(plugin, this, interval * 20);
                 if (LimboCache.getInstance().hasLimboPlayer(name)) {
-                    LimboCache.getInstance().getLimboPlayer(name)
-                            .setMessageTaskId(late);
+                    LimboCache.getInstance().getLimboPlayer(name).setMessageTaskId(late);
                 }
             }
         }

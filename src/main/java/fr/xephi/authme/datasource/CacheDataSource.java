@@ -22,17 +22,19 @@ public class CacheDataSource implements DataSource {
 
     @Override
     public synchronized boolean isAuthAvailable(String user) {
-        if (cache.containsKey(user.toLowerCase())) return true;
-        return source.isAuthAvailable(user.toLowerCase());
+        if (cache.containsKey(user))
+            return true;
+        return source.isAuthAvailable(user);
     }
 
     @Override
     public synchronized PlayerAuth getAuth(String user) {
-        if (cache.containsKey(user.toLowerCase())) {
-            return cache.get(user.toLowerCase());
+        if (cache.containsKey(user)) {
+            return cache.get(user);
         } else {
-            PlayerAuth auth = source.getAuth(user.toLowerCase());
-            if (auth != null) cache.put(user.toLowerCase(), auth);
+            PlayerAuth auth = source.getAuth(user);
+            if (auth != null)
+                cache.put(user, auth);
             return auth;
         }
     }
@@ -49,8 +51,8 @@ public class CacheDataSource implements DataSource {
     @Override
     public synchronized boolean updatePassword(PlayerAuth auth) {
         if (source.updatePassword(auth)) {
-            if (cache.containsKey(auth.getNickname().toLowerCase())) cache.get(
-                    auth.getNickname()).setHash(auth.getHash());
+            if (cache.containsKey(auth.getNickname()))
+                cache.get(auth.getNickname()).setHash(auth.getHash());
             return true;
         }
         return false;
@@ -59,7 +61,7 @@ public class CacheDataSource implements DataSource {
     @Override
     public boolean updateSession(PlayerAuth auth) {
         if (source.updateSession(auth)) {
-            if (cache.containsKey(auth.getNickname().toLowerCase())) {
+            if (cache.containsKey(auth.getNickname())) {
                 cache.get(auth.getNickname()).setIp(auth.getIp());
                 cache.get(auth.getNickname()).setLastLogin(auth.getLastLogin());
             }
@@ -71,7 +73,7 @@ public class CacheDataSource implements DataSource {
     @Override
     public boolean updateQuitLoc(PlayerAuth auth) {
         if (source.updateQuitLoc(auth)) {
-            if (cache.containsKey(auth.getNickname().toLowerCase())) {
+            if (cache.containsKey(auth.getNickname())) {
                 cache.get(auth.getNickname()).setQuitLocX(auth.getQuitLocX());
                 cache.get(auth.getNickname()).setQuitLocY(auth.getQuitLocY());
                 cache.get(auth.getNickname()).setQuitLocZ(auth.getQuitLocZ());
@@ -115,8 +117,8 @@ public class CacheDataSource implements DataSource {
 
     @Override
     public synchronized boolean removeAuth(String user) {
-        if (source.removeAuth(user.toLowerCase())) {
-            cache.remove(user.toLowerCase());
+        if (source.removeAuth(user)) {
+            cache.remove(user);
             return true;
         }
         return false;
@@ -132,7 +134,7 @@ public class CacheDataSource implements DataSource {
         cache.clear();
         source.reload();
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            String user = player.getName().toLowerCase();
+            String user = player.getName();
             if (PlayerCache.getInstance().isAuthenticated(user)) {
                 try {
                     PlayerAuth auth = source.getAuth(user);
@@ -147,8 +149,8 @@ public class CacheDataSource implements DataSource {
     @Override
     public synchronized boolean updateEmail(PlayerAuth auth) {
         if (source.updateEmail(auth)) {
-            if (cache.containsKey(auth.getNickname().toLowerCase())) cache.get(
-                    auth.getNickname()).setEmail(auth.getEmail());
+            if (cache.containsKey(auth.getNickname()))
+                cache.get(auth.getNickname()).setEmail(auth.getEmail());
             return true;
         }
         return false;
@@ -157,8 +159,8 @@ public class CacheDataSource implements DataSource {
     @Override
     public synchronized boolean updateSalt(PlayerAuth auth) {
         if (source.updateSalt(auth)) {
-            if (cache.containsKey(auth.getNickname().toLowerCase())) cache.get(
-                    auth.getNickname()).setSalt(auth.getSalt());
+            if (cache.containsKey(auth.getNickname()))
+                cache.get(auth.getNickname()).setSalt(auth.getSalt());
             return true;
         }
         return false;
@@ -217,5 +219,19 @@ public class CacheDataSource implements DataSource {
     @Override
     public int getAccountsRegistered() {
         return source.getAccountsRegistered();
+    }
+
+    @Override
+    public void updateName(String oldone, String newone) {
+        if (cache.containsKey(oldone)) {
+            cache.put(newone, cache.get(oldone));
+            cache.remove(oldone);
+        }
+        source.updateName(oldone, newone);
+    }
+
+    @Override
+    public List<PlayerAuth> getAllAuths() {
+        return source.getAllAuths();
     }
 }

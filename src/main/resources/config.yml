@@ -74,7 +74,7 @@ settings:
         # And try to login with an another IP Address?
         sessionExpireOnIpChange: false
     restrictions:
-        # Can unregistered players chat, care , that block all commands except followers
+        # Can unregistered/unlogged players chat and see chat, care , that block all commands except followers
         allowChat: false
         # Commands allowed when a player is unlogged
         allowCommands:
@@ -250,6 +250,10 @@ settings:
     forceCommands: []
     # Force these commands after /login as a server console, without any '/', use %p for replace with player name
     forceCommandsAsConsole: []
+    # Force these commands after /register, without any '/', use %p for replace with player name
+    forceRegisterCommands: []
+    # Force these commands after /register as a server console, without any '/', use %p for replace with player name
+    forceRegisterCommandsAsConsole: []
     # Do we need to display the welcome message (welcome.txt) after a register or a login?
     # You can use colors in this welcome.txt + some replaced strings : 
     # {PLAYER} : player name, {ONLINE} : display number of online players, {MAXPLAYERS} : display server slots,

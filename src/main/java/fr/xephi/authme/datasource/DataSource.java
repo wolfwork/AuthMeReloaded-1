@@ -8,7 +8,9 @@ public interface DataSource {
 
     public enum DataSourceType {
 
-        MYSQL, FILE, SQLITE
+        MYSQL,
+        FILE,
+        SQLITE
     }
 
     boolean isAuthAvailable(String user);
@@ -58,5 +60,9 @@ public interface DataSource {
     void purgeLogged();
 
     int getAccountsRegistered();
+
+    void updateName(String oldone, String newone);
+
+    List<PlayerAuth> getAllAuths();
 
 }

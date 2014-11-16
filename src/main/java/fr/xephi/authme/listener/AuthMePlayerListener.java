@@ -388,11 +388,16 @@ public class AuthMePlayerListener implements Listener {
 
         if (!lowname.equals(name)) {
             // Little workaround to be sure registered player is the same as this
-            if (player.hasPlayedBefore())
+            if (player.hasPlayedBefore() && !player.isOnline())
                 // Make sure it's the correct player
-                if (data.isAuthAvailable(lowname))
-                    if (data.getAuth(lowname).getIp().equalsIgnoreCase(player.getAddress().getAddress().getHostAddress()))
+                if (data.isAuthAvailable(lowname)) {
+                    if (data.getAuth(lowname).getIp().equalsIgnoreCase(player.getAddress().getAddress().getHostAddress())) {
                         data.updateName(lowname, name);
+                    } else {
+                        event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
+                        event.setKickMessage(m._("same_nick")[0]);
+                    }
+                }
         }
 
         if (plugin.getCitizensCommunicator().isNPC(player, plugin) || Utils.getInstance().isUnrestricted(player) || CombatTagComunicator.isNPC(player)) {
@@ -911,7 +916,7 @@ public class AuthMePlayerListener implements Listener {
         player.saveData();
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerPickupItem(PlayerPickupItemEvent event) {
         if (event.isCancelled() || event.getPlayer() == null) {
             return;
@@ -970,7 +975,7 @@ public class AuthMePlayerListener implements Listener {
         event.setCancelled(true);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerInventoryOpen(InventoryOpenEvent event) {
         if (event.isCancelled() || event.getPlayer() == null)
             return;
@@ -997,7 +1002,7 @@ public class AuthMePlayerListener implements Listener {
         player.closeInventory();
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerInventoryClick(InventoryClickEvent event) {
         if (event.isCancelled() || event.getWhoClicked() == null)
             return;

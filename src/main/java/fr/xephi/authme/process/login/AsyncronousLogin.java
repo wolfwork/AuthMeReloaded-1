@@ -7,6 +7,7 @@ import me.muizers.Notifications.Notification;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import fr.xephi.authme.AuthMe;
 import fr.xephi.authme.ConsoleLogger;
@@ -25,6 +26,7 @@ public class AsyncronousLogin {
 
     protected Player player;
     protected String name;
+    protected String realName;
     protected String password;
     protected boolean forceLogin;
     private AuthMe plugin;
@@ -36,7 +38,8 @@ public class AsyncronousLogin {
             AuthMe plugin, DataSource data) {
         this.player = player;
         this.password = password;
-        name = player.getName();
+        name = player.getName().toLowerCase();
+        realName = player.getName();
         this.forceLogin = forceLogin;
         this.plugin = plugin;
         this.database = data;
@@ -84,14 +87,14 @@ public class AsyncronousLogin {
         if (!database.isAuthAvailable(name)) {
             m._(player, "user_unknown");
             if (LimboCache.getInstance().hasLimboPlayer(name)) {
-                Bukkit.getScheduler().cancelTask(LimboCache.getInstance().getLimboPlayer(name).getMessageTaskId());
+            	LimboCache.getInstance().getLimboPlayer(name).getMessageTaskId().cancel();
                 String[] msg;
                 if (Settings.emailRegistration) {
                     msg = m._("reg_email_msg");
                 } else {
                     msg = m._("reg_msg");
                 }
-                int msgT = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new MessageTask(plugin, name, msg, Settings.getWarnMessageInterval));
+                BukkitTask msgT = Bukkit.getScheduler().runTask(plugin, new MessageTask(plugin, name, msg, Settings.getWarnMessageInterval));
                 LimboCache.getInstance().getLimboPlayer(name).setMessageTaskId(msgT);
             }
             return null;
@@ -124,7 +127,7 @@ public class AsyncronousLogin {
         boolean passwordVerified = true;
         if (!forceLogin)
             try {
-                passwordVerified = PasswordSecurity.comparePasswordWithHash(password, hash, name);
+                passwordVerified = PasswordSecurity.comparePasswordWithHash(password, hash, realName);
             } catch (Exception ex) {
                 ConsoleLogger.showError(ex.getMessage());
                 m._(player, "error");
@@ -166,8 +169,8 @@ public class AsyncronousLogin {
             // processed in other order.
             ProcessSyncronousPlayerLogin syncronousPlayerLogin = new ProcessSyncronousPlayerLogin(player, plugin, database);
             if (syncronousPlayerLogin.getLimbo() != null) {
-                player.getServer().getScheduler().cancelTask(syncronousPlayerLogin.getLimbo().getTimeoutTaskId());
-                player.getServer().getScheduler().cancelTask(syncronousPlayerLogin.getLimbo().getMessageTaskId());
+            	syncronousPlayerLogin.getLimbo().getTimeoutTaskId().cancel();
+            	syncronousPlayerLogin.getLimbo().getMessageTaskId().cancel();
             }
             Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, syncronousPlayerLogin);
         } else if (player.isOnline()) {

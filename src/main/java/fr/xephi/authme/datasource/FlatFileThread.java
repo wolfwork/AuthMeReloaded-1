@@ -48,6 +48,7 @@ public class FlatFileThread extends Thread implements DataSource {
                 AuthMe.getInstance().getServer().getPluginManager().disablePlugin(AuthMe.getInstance());
             return;
         }
+        this.setName("AuthMeFlatFileThread");
     }
 
     @Override
@@ -651,17 +652,17 @@ public class FlatFileThread extends Thread implements DataSource {
 
     @Override
     public boolean isLogged(String user) {
-        return PlayersLogs.getInstance().players.contains(user);
+        return PlayersLogs.getInstance().players.contains(user.toLowerCase());
     }
 
     @Override
     public void setLogged(String user) {
-        PlayersLogs.getInstance().addPlayer(user);
+        PlayersLogs.getInstance().addPlayer(user.toLowerCase());
     }
 
     @Override
     public void setUnlogged(String user) {
-        PlayersLogs.getInstance().removePlayer(user);
+        PlayersLogs.getInstance().removePlayer(user.toLowerCase());
     }
 
     @Override

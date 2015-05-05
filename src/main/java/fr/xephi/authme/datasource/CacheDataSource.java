@@ -9,7 +9,7 @@ import fr.xephi.authme.AuthMe;
 import fr.xephi.authme.cache.auth.PlayerAuth;
 import fr.xephi.authme.cache.auth.PlayerCache;
 
-public class CacheDataSource implements DataSource {
+public class CacheDataSource extends Thread implements DataSource {
 
     private DataSource source;
     public AuthMe plugin;
@@ -18,17 +18,30 @@ public class CacheDataSource implements DataSource {
     public CacheDataSource(AuthMe plugin, DataSource source) {
         this.plugin = plugin;
         this.source = source;
+        /*
+         * We need to load all players in cache ...
+         * It will took more time to load the server,
+         * but it will be much easier to check for an isAuthAvailable !
+         */
+        for(PlayerAuth auth : source.getAllAuths())
+        	cache.put(auth.getNickname(), auth);
+    }
+
+    public void run()
+    {
+    	this.setName("AuthMeCacheThread");
     }
 
     @Override
     public synchronized boolean isAuthAvailable(String user) {
-        if (cache.containsKey(user))
+        if (cache.containsKey(user.toLowerCase()))
             return true;
-        return source.isAuthAvailable(user);
+        return false;
     }
 
     @Override
     public synchronized PlayerAuth getAuth(String user) {
+    	user = user.toLowerCase();
         if (cache.containsKey(user)) {
             return cache.get(user);
         } else {
@@ -127,6 +140,7 @@ public class CacheDataSource implements DataSource {
     @Override
     public synchronized void close() {
         source.close();
+        this.interrupt();
     }
 
     @Override
@@ -134,7 +148,7 @@ public class CacheDataSource implements DataSource {
         cache.clear();
         source.reload();
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            String user = player.getName();
+            String user = player.getName().toLowerCase();
             if (PlayerCache.getInstance().isAuthenticated(user)) {
                 try {
                     PlayerAuth auth = source.getAuth(user);
@@ -198,17 +212,17 @@ public class CacheDataSource implements DataSource {
 
     @Override
     public boolean isLogged(String user) {
-        return source.isLogged(user);
+        return source.isLogged(user.toLowerCase());
     }
 
     @Override
     public void setLogged(String user) {
-        source.setLogged(user);
+        source.setLogged(user.toLowerCase());
     }
 
     @Override
     public void setUnlogged(String user) {
-        source.setUnlogged(user);
+        source.setUnlogged(user.toLowerCase());
     }
 
     @Override

@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitTask;
 
 import fr.xephi.authme.AuthMe;
 import fr.xephi.authme.ConsoleLogger;
@@ -55,7 +56,7 @@ public class UnregisterCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        String name = player.getName();
+        String name = player.getName().toLowerCase();
 
         if (!PlayerCache.getInstance().isAuthenticated(name)) {
             m._(player, "not_logged_in");
@@ -84,7 +85,7 @@ public class UnregisterCommand implements CommandExecutor {
                     player.getInventory().setContents(new ItemStack[36]);
                     player.getInventory().setArmorContents(new ItemStack[4]);
                     player.saveData();
-                    PlayerCache.getInstance().removePlayer(player.getName());
+                    PlayerCache.getInstance().removePlayer(player.getName().toLowerCase());
                     if (!Settings.getRegisteredGroup.isEmpty())
                         Utils.getInstance().setGroup(player, groupType.UNREGISTERED);
                     LimboCache.getInstance().addLimboPlayer(player);
@@ -92,10 +93,10 @@ public class UnregisterCommand implements CommandExecutor {
                     int interval = Settings.getWarnMessageInterval;
                     BukkitScheduler sched = sender.getServer().getScheduler();
                     if (delay != 0) {
-                        int id = sched.scheduleSyncDelayedTask(plugin, new TimeoutTask(plugin, name), delay);
+                        BukkitTask id = sched.runTaskLater(plugin, new TimeoutTask(plugin, name), delay);
                         LimboCache.getInstance().getLimboPlayer(name).setTimeoutTaskId(id);
                     }
-                    LimboCache.getInstance().getLimboPlayer(name).setMessageTaskId(sched.scheduleSyncDelayedTask(plugin, new MessageTask(plugin, name, m._("reg_msg"), interval)));
+                    LimboCache.getInstance().getLimboPlayer(name).setMessageTaskId(sched.runTask(plugin, new MessageTask(plugin, name, m._("reg_msg"), interval)));
                     m._(player, "unregistered");
                     ConsoleLogger.info(player.getDisplayName() + " unregistered himself");
                     if (plugin.notifications != null) {
@@ -106,7 +107,7 @@ public class UnregisterCommand implements CommandExecutor {
                 if (!Settings.unRegisteredGroup.isEmpty()) {
                     Utils.getInstance().setGroup(player, Utils.groupType.UNREGISTERED);
                 }
-                PlayerCache.getInstance().removePlayer(player.getName());
+                PlayerCache.getInstance().removePlayer(player.getName().toLowerCase());
                 // check if Player cache File Exist and delete it, preventing
                 // duplication of items
                 if (playerCache.doesCacheExist(player)) {

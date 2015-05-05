@@ -24,6 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitTask;
 
 import fr.xephi.authme.AuthMe;
 import fr.xephi.authme.ConsoleLogger;
@@ -161,8 +162,8 @@ public class AdminCommand implements CommandExecutor {
                 return true;
             }
             try {
-                if (database.getAuth(args[1]) != null) {
-                    PlayerAuth player = database.getAuth(args[1]);
+                if (database.getAuth(args[1].toLowerCase()) != null) {
+                    PlayerAuth player = database.getAuth(args[1].toLowerCase());
                     long lastLogin = player.getLastLogin();
                     Date d = new Date(lastLogin);
                     final long diff = System.currentTimeMillis() - lastLogin;
@@ -195,7 +196,7 @@ public class AdminCommand implements CommandExecutor {
                         PlayerAuth pAuth = null;
                         String message = "[AuthMe] ";
                         try {
-                            pAuth = database.getAuth(arguments[1]);
+                            pAuth = database.getAuth(arguments[1].toLowerCase());
                         } catch (NullPointerException npe) {
                             fSender.sendMessage("[AuthMe] This player is unknown");
                             return;
@@ -273,7 +274,7 @@ public class AdminCommand implements CommandExecutor {
                 return true;
             }
             try {
-                String name = args[1];
+                String name = args[1].toLowerCase();
                 if (database.isAuthAvailable(name)) {
                     m._(sender, "user_regged");
                     return true;
@@ -299,7 +300,7 @@ public class AdminCommand implements CommandExecutor {
                 sender.sendMessage("Usage: /authme getemail playername");
                 return true;
             }
-            String playername = args[1];
+            String playername = args[1].toLowerCase();
             PlayerAuth getAuth = database.getAuth(playername);
             if (getAuth == null) {
                 m._(sender, "unknown_user");
@@ -312,7 +313,7 @@ public class AdminCommand implements CommandExecutor {
                 sender.sendMessage("Usage: /authme chgemail playername email");
                 return true;
             }
-            String playername = args[1];
+            String playername = args[1].toLowerCase();
             PlayerAuth getAuth = database.getAuth(playername);
             if (getAuth == null) {
                 m._(sender, "unknown_user");
@@ -355,7 +356,7 @@ public class AdminCommand implements CommandExecutor {
         } else if (args[0].equalsIgnoreCase("purgebannedplayers")) {
             List<String> bannedPlayers = new ArrayList<String>();
             for (OfflinePlayer off : plugin.getServer().getBannedPlayers()) {
-                bannedPlayers.add(off.getName());
+                bannedPlayers.add(off.getName().toLowerCase());
             }
             database.purgeBanned(bannedPlayers);
             if (Settings.purgeEssentialsFile && plugin.ess != null)
@@ -399,7 +400,7 @@ public class AdminCommand implements CommandExecutor {
                 return true;
             }
             try {
-                String name = args[1];
+                String name = args[1].toLowerCase();
                 String hash = PasswordSecurity.getHash(Settings.getPasswordHash, args[2], name);
                 PlayerAuth auth = null;
                 if (PlayerCache.getInstance().isAuthenticated(name)) {
@@ -432,7 +433,7 @@ public class AdminCommand implements CommandExecutor {
                 sender.sendMessage("Usage: /authme unregister playername");
                 return true;
             }
-            String name = args[1];
+            String name = args[1].toLowerCase();
             if (!database.isAuthAvailable(name)) {
                 m._(sender, "user_unknown");
                 return true;
@@ -459,10 +460,10 @@ public class AdminCommand implements CommandExecutor {
                     int interval = Settings.getWarnMessageInterval;
                     BukkitScheduler sched = sender.getServer().getScheduler();
                     if (delay != 0) {
-                        int id = sched.scheduleSyncDelayedTask(plugin, new TimeoutTask(plugin, name), delay);
+                        BukkitTask id = sched.runTaskLater(plugin, new TimeoutTask(plugin, name), delay);
                         LimboCache.getInstance().getLimboPlayer(name).setTimeoutTaskId(id);
                     }
-                    LimboCache.getInstance().getLimboPlayer(name).setMessageTaskId(sched.scheduleSyncDelayedTask(plugin, new MessageTask(plugin, name, m._("reg_msg"), interval)));
+                    LimboCache.getInstance().getLimboPlayer(name).setMessageTaskId(sched.runTask(plugin, new MessageTask(plugin, name, m._("reg_msg"), interval)));
                     if (Settings.applyBlindEffect)
                         target.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Settings.getRegistrationTimeout * 20, 2));
                     m._(target, "unregistered");
@@ -481,7 +482,7 @@ public class AdminCommand implements CommandExecutor {
                 return true;
             }
             try {
-                String name = args[1];
+                String name = args[1].toLowerCase();
                 PlayerAuth auth = database.getAuth(name);
                 if (auth == null) {
                     sender.sendMessage("The player " + name + " is not registered ");

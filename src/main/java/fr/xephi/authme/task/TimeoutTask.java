@@ -35,18 +35,21 @@ public class TimeoutTask implements Runnable {
             return;
 
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            if (player.getName().equals(name)) {
+            if (player.getName().toLowerCase().equals(name)) {
                 if (LimboCache.getInstance().hasLimboPlayer(name)) {
                     LimboPlayer inv = LimboCache.getInstance().getLimboPlayer(name);
-                    player.getServer().getScheduler().cancelTask(inv.getMessageTaskId());
-                    player.getServer().getScheduler().cancelTask(inv.getTimeoutTaskId());
+                    inv.getMessageTaskId().cancel();
+                    inv.getTimeoutTaskId().cancel();
                     if (playerCache.doesCacheExist(player)) {
                         playerCache.removeCache(player);
                     }
                 }
                 GameMode gm = AuthMePlayerListener.gameMode.get(name);
-                player.setGameMode(gm);
-                ConsoleLogger.info("Set " + player.getName() + " to gamemode: " + gm.name());
+                if (gm != null)
+                {
+                	player.setGameMode(gm);
+                	ConsoleLogger.info("Set " + player.getName() + " to gamemode: " + gm.name());
+                }
                 player.kickPlayer(m._("timeout")[0]);
                 break;
             }

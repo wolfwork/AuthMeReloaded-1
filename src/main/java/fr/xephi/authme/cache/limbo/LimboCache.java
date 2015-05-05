@@ -29,14 +29,14 @@ public class LimboCache {
     }
 
     public void addLimboPlayer(Player player) {
-        String name = player.getName();
+        String name = player.getName().toLowerCase();
         Location loc = player.getLocation();
         GameMode gameMode = player.getGameMode();
         ItemStack[] arm;
         ItemStack[] inv;
-        boolean operator;
+        boolean operator = false;
         String playerGroup = "";
-        boolean flying;
+        boolean flying = false;
 
         if (playerData.doesCacheExist(player)) {
             StoreInventoryEvent event = new StoreInventoryEvent(player, playerData);
@@ -48,9 +48,14 @@ public class LimboCache {
                 inv = null;
                 arm = null;
             }
-            playerGroup = playerData.readCache(player).getGroup();
-            operator = playerData.readCache(player).getOperator();
-            flying = playerData.readCache(player).isFlying();
+            try {
+                playerGroup = playerData.readCache(player).getGroup();
+                operator = playerData.readCache(player).getOperator();
+                flying = playerData.readCache(player).isFlying();
+            } catch (Exception e)
+            {
+            	ConsoleLogger.showError("Some error on reading cache of " + name);
+            }
         } else {
             StoreInventoryEvent event = new StoreInventoryEvent(player);
             Bukkit.getServer().getPluginManager().callEvent(event);
@@ -91,11 +96,11 @@ public class LimboCache {
         if (player.isDead()) {
             loc = plugin.getSpawnLocation(player);
         }
-        cache.put(player.getName(), new LimboPlayer(name, loc, inv, arm, gameMode, operator, playerGroup, flying));
+        cache.put(name, new LimboPlayer(name, loc, inv, arm, gameMode, operator, playerGroup, flying));
     }
 
     public void addLimboPlayer(Player player, String group) {
-        cache.put(player.getName(), new LimboPlayer(player.getName(), group));
+        cache.put(player.getName().toLowerCase(), new LimboPlayer(player.getName().toLowerCase(), group));
     }
 
     public void deleteLimboPlayer(String name) {
@@ -118,8 +123,8 @@ public class LimboCache {
     }
 
     public void updateLimboPlayer(Player player) {
-        if (this.hasLimboPlayer(player.getName())) {
-            this.deleteLimboPlayer(player.getName());
+        if (this.hasLimboPlayer(player.getName().toLowerCase())) {
+            this.deleteLimboPlayer(player.getName().toLowerCase());
         }
         this.addLimboPlayer(player);
     }

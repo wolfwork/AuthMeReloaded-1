@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
@@ -47,7 +48,7 @@ public class AuthMeEntityListener implements Listener {
             return;
 
         Player player = (Player) entity;
-        String name = player.getName();
+        String name = player.getName().toLowerCase();
 
         if (CombatTagComunicator.isNPC(player))
             return;
@@ -82,7 +83,7 @@ public class AuthMeEntityListener implements Listener {
             return;
 
         Player player = (Player) entity;
-        String name = player.getName();
+        String name = player.getName().toLowerCase();
 
         if (PlayerCache.getInstance().isAuthenticated(name)) {
             return;
@@ -96,6 +97,34 @@ public class AuthMeEntityListener implements Listener {
         event.setTarget(null);
         event.setCancelled(true);
     }
+    
+    @EventHandler(priority = EventPriority.LOWEST)
+	public void onDmg(EntityDamageByEntityEvent event) {
+		if (event.isCancelled()) {
+            return;
+        }
+		
+		Entity entity = event.getDamager();
+		
+		if (entity == null || !(entity instanceof Player)) {
+            return;
+        }
+		
+		Player player = (Player) entity;
+		String name = player.getName().toLowerCase();
+		
+        if (PlayerCache.getInstance().isAuthenticated(name)) {
+            return;
+        }
+
+        if (!data.isAuthAvailable(name)) {
+            if (!Settings.isForcedRegistrationEnabled) {
+                return;
+            }
+        }
+        
+        event.setCancelled(true);
+	}
 
     @EventHandler (priority = EventPriority.LOWEST)
     public void onFoodLevelChange(FoodLevelChangeEvent event) {
@@ -112,7 +141,7 @@ public class AuthMeEntityListener implements Listener {
             return;
 
         Player player = (Player) entity;
-        String name = player.getName();
+        String name = player.getName().toLowerCase();
 
         if (PlayerCache.getInstance().isAuthenticated(name)) {
             return;
@@ -143,7 +172,7 @@ public class AuthMeEntityListener implements Listener {
             return;
 
         Player player = (Player) entity;
-        String name = player.getName();
+        String name = player.getName().toLowerCase();
 
         if (PlayerCache.getInstance().isAuthenticated(name)) {
             return;
@@ -170,7 +199,7 @@ public class AuthMeEntityListener implements Listener {
         }
 
         Player player = (Player) event.getEntity();
-        String name = player.getName();
+        String name = player.getName().toLowerCase();
 
         if (Utils.getInstance().isUnrestricted(player) || CombatTagComunicator.isNPC(player)) {
             return;
@@ -202,7 +231,7 @@ public class AuthMeEntityListener implements Listener {
         }
 
         Player player = (Player) event.getEntity();
-        String name = player.getName();
+        String name = player.getName().toLowerCase();
 
         if (Utils.getInstance().isUnrestricted(player) || CombatTagComunicator.isNPC(player)) {
             return;
